@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Video, Category, Comment, Like, WatchHistory
 
-# ۱. این کلاس حتما باید بالاتر از VideoSerializer باشد
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -14,7 +13,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'user_phone', 'text', 'created_at']
 
-# ۲. حالا VideoSerializer بدون مشکل CategorySerializer را می‌شناسد
 class VideoSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
     likes_count = serializers.IntegerField(read_only=True)

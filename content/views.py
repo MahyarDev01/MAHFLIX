@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny,IsAuthenticatedOrReadOnly
 from django.db.models import Q, F , Sum
-from .models import Video, Like, WatchHistory
-from .serializers import VideoSerializer
+from .models import Video, Like, WatchHistory ,Comment
+from .serializers import VideoSerializer ,CommentSerializer
 
 
 class VideoListView(APIView):
@@ -57,21 +57,33 @@ class VideoWatchView(APIView):
         except Video.DoesNotExist:
             return Response({"error": "ویدیو یافت نشد."}, status=status.HTTP_404_NOT_FOUND)
 
-        # افزایش اتوماتیک تعداد بازدید بدون عملیات دستی
+        user = request.user
+        if not user or not user.is_authenticated:
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer '):
+                try:
+                    from rest_framework_simplejwt.authentication import JWTAuthentication
+                    validated_token = JWTAuthentication().get_validated_token(auth_header.split(' ')[1])
+                    user = JWTAuthentication().get_user(validated_token)
+                except Exception:
+                    user = None
+        if video.is_premium_only:
+            if not user or not user.is_authenticated or not getattr(user, 'is_premium', False):
+                return Response(
+                    {"error": "این محتوا مخصوص کاربران ویژه است. لطفاً ابتدا اشتراک تهیه کنید.", "is_premium_required": True},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         Video.objects.filter(id=video_id).update(views_count=F('views_count') + 1)
         video.refresh_from_db()
 
-        # ثبت در تاریخچه کاربر لاگین‌شده
-        if request.user.is_authenticated:
-            WatchHistory.objects.update_or_create(user=request.user, video=video)
-        return Response({"views_count": video.views_count, "video_url": video.video_file_url})
+        if user and user.is_authenticated:
+            WatchHistory.objects.update_or_create(user=user, video=video)
+
+        return Response({
+            "views_count": video.views_count,
+            "video_url": video.video_file_url
+        })
     
-
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Comment
-from .serializers import CommentSerializer
-
-# ویوی آمار کاملاً شخصی‌سازی‌شده برای کاربر لاگین‌شده
 class ContentStatsView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -89,7 +101,6 @@ class ContentStatsView(APIView):
                 validated_token = auth.get_validated_token(token.replace('Bearer ', ''))
                 user = auth.get_user(validated_token)
                 
-                # آمار اختصاصی همین کاربر
                 user_likes_count = Like.objects.filter(user=user).count()
                 user_comments_count = Comment.objects.filter(user=user).count()
                 user_watched_count = WatchHistory.objects.filter(user=user).count()
@@ -102,7 +113,6 @@ class ContentStatsView(APIView):
             "user_watched": user_watched_count
         })
 
-# دریافت و ثبت نظر
 class VideoCommentListCreateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 

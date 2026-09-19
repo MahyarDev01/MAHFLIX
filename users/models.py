@@ -31,7 +31,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_premium(self):
-        # بعدا اینجا اشتراک فعال کاربر در جدول UserSubscription بررسی می‌شود
+        from django.utils import timezone
+        if hasattr(self, 'subscription') and self.subscription:
+            return self.subscription.expires_at > timezone.now()
         return False
 
     def __str__(self):

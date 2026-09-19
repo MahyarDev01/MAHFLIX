@@ -15,8 +15,6 @@ class Video(models.Model):
     title = models.CharField(max_length=255, verbose_name="عنوان")
     video_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='movie', verbose_name="نوع")
     categories = models.ManyToManyField(Category, related_name='videos', blank=True, verbose_name="دسته‌بندی‌ها")
-    
-    # مسیر مستقیم عکس در استاتیک (مثال: image/movies/m1.jpeg)
     cover_path = models.CharField(max_length=255, default='image/movies/m1.jpeg', verbose_name="مسیر کاور در استاتیک")
     
     video_file_url = models.URLField(blank=True, null=True, verbose_name="لینک فایل ویدیو")
@@ -49,7 +47,6 @@ class WatchHistory(models.Model):
     watched_at = models.DateTimeField(auto_now=True)
     
 
-# در انتهای فایل models.py مدل کامنت را اضافه کن:
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='comments')

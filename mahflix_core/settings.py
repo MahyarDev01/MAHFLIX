@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'pages',
     'finance',
     'content',
-    'subscriptions',
     'users',
 ]
 

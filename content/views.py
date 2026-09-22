@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny,IsAuthenticatedOrReadOnly
 from django.db.models import Q, F , Sum
-from .models import Video, Like, WatchHistory ,Comment
-from .serializers import VideoSerializer ,CommentSerializer
+from .models import Video, Like, WatchHistory ,Comment , Category
+from .serializers import VideoSerializer ,CommentSerializer , WatchHistorySerializer , CategorySerializer
 
 
 class VideoListView(APIView):
@@ -129,3 +129,21 @@ class VideoCommentListCreateView(APIView):
         comment = Comment.objects.create(user=request.user, video_id=video_id, text=text)
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# views_C.py
+class UserWatchHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        history = WatchHistory.objects.filter(user=request.user).order_by('-id')
+        serializer = WatchHistorySerializer(history, many=True, context={'request': request})
+        return Response(serializer.data)
+
+class CategoryListView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)

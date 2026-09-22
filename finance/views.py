@@ -104,4 +104,15 @@ class BuySubscriptionView(APIView):
             "balance": f"{int(user.wallet_balance):,}"
         })
         
-    
+class CancelSubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        sub = UserSubscription.objects.filter(user=request.user).first()
+        if not sub or sub.expires_at <= timezone.now():
+            return Response({"error": "اشتراک فعالی برای لغو یافت نشد."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # لغو آنی اشتراک
+        sub.expires_at = timezone.now()
+        sub.save()
+        return Response({"message": "اشتراک شما با موفقیت لغو شد."})

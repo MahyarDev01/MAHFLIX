@@ -32,11 +32,14 @@ class RegisterVerifyAndSetPasswordView(APIView):
         phone = request.data.get('phone_number')
         otp_input = request.data.get('otp')
         password = request.data.get('password')
+        email = request.data.get('email', '')
+
         
         cached_otp = cache.get(f"register_otp_{phone}")
         if cached_otp and str(cached_otp) == str(otp_input):
             user = User(phone_number=phone)
             user.set_password(password) 
+            user.email = email
             user.save()
             cache.delete(f"register_otp_{phone}")
             tokens = get_tokens_for_user(user)

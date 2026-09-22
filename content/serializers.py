@@ -59,3 +59,9 @@ class VideoSerializer(serializers.ModelSerializer):
     def get_has_commented(self, obj):
         user = self._get_user()
         return obj.comments.filter(user=user).exists() if user else False
+    
+class WatchHistorySerializer(serializers.ModelSerializer):
+    video = VideoSerializer(read_only=True)
+    class Meta:
+        model = WatchHistory
+        fields = ['id', 'video', 'watched_at']

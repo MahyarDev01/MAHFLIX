@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت‌نام | MAHFLIX</title>
+    <style>
+        /* تنظیمات پایه و فونت */
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            /* مسیر عکس بک‌گراند */
+            background: linear-gradient(rgba(10, 10, 10, 0.8), rgba(10, 10, 10, 0.95)), url('../static/image/bg-movies.jpg') no-repeat center center/cover;
+            background-color: #0a0a0a;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* بخش لوگو بیرون از باکس */
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .brand-logo img {
+            max-width: 320px; 
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(229, 9, 20, 0.4));
+        }
+
+        /* کارت شیشه‌ای و مدرن فرم - عرض به همون حالت جمع‌وجور برگشت */
+        .login-card {
+            width: 100%;
+            max-width: 420px; /* سایز اصلی و مناسب گوشی */
+            background: rgba(25, 25, 25, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* عنوان فرم */
+        .form-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 35px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        /* استایل فیلدها با لیبل شناور */
+        .input-box {
+            position: relative;
+            margin-bottom: 25px; /* فاصله زیر هر فیلد */
+        }
+
+        /* ردیف مخصوص رمز عبور (دو تا کنار هم) */
+        .password-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px; /* فاصله بین فیلد رمز و تکرارش */
+            margin-bottom: 25px;
+        }
+
+        /* حذف فاصله اضافی زیر فیلدهای داخل ردیف رمز عبور */
+        .password-row .input-box {
+            margin-bottom: 0;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        /* وقتی فیلد فوکوس میشه یا خالی نیست */
+        .input-box input:focus, 
+        .input-box input:not(:placeholder-shown) {
+            border-color: #E50914;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(229, 9, 20, 0.2);
+        }
+
+        .input-box label {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 0.95rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        /* حرکت لیبل به بالا */
+        .input-box input:focus ~ label,
+        .input-box input:not(:placeholder-shown) ~ label {
+            top: -10px;
+            right: 15px;
+            font-size: 0.8rem;
+            color: #E50914;
+            background-color: #1a1a1a;
+            padding: 0 8px;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #E50914, #b81d24);
+            color: #0a0a0a;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+            margin-bottom: 25px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+        }
+
+        .signup-link {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #888;
+        }
+
+        .signup-link a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #E50914;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- لوگوی تصویر بیرون از باکس -->
+    <div class="brand-logo">
+        <img src="../static/image/full_logo.png" alt="MAHFLIX Logo">
+    </div>
+
+    <div class="login-card">
+        <!-- عنوان باکس -->
+        <h2 class="form-title">ثبت‌نام کنید</h2>
+
+        <form id="registerForm">
+            <!-- ردیف اول: شماره موبایل (کامل) -->
+            <div class="input-box">
+                <input type="tel" id="phone" placeholder=" " required>
+                <label for="phone">شماره موبایل</label>
+            </div>
+
+            <!-- ردیف دوم: ایمیل (کامل) -->
+            <div class="input-box">
+                <input type="email" id="email" placeholder=" ">
+                <label for="email">ایمیل (اختیاری)</label>
+            </div>
+
+            <!-- ردیف سوم: رمز عبور و تکرار آن (کنار هم) -->
+            <div class="password-row">
+                <!-- رمز عبور (اجباری) -->
+                <div class="input-box">
+                    <input type="password" id="password" placeholder=" " required>
+                    <label for="password">رمز عبور</label>
+                </div>
+
+                <!-- تکرار رمز عبور (اجباری) -->
+                <div class="input-box">
+                    <input type="password" id="confirm_password" placeholder=" " required>
+                    <label for="confirm_password">تکرار رمز</label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">ثبت‌نام</button>
+
+            <!-- لینک ورود -->
+            <div class="signup-link">
+                <span>حساب کاربری دارید؟</span>
+                <a href="/">وارد شوید</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        if (localStorage.getItem('access_token')) {
+            window.location.href = '/home/';
+        }
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+
+            if (password !== confirm) {
+                alert("رمز عبور و تکرار آن یکسان نیست!");
+                return;
+            }
+
+            fetch('/api/users/register/send-otp/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ phone_number: phone })
+            }).then(res => res.json()).then(data => {
+                if(data.message) {
+                    // ذخیره موقت اطلاعات برای صفحه OTP
+                    localStorage.setItem('auth_phone', phone);
+                    localStorage.setItem('auth_email', email);
+                    localStorage.setItem('auth_password', password);
+                    localStorage.setItem('auth_action', 'register');
+                    window.location.href = '/otp-verify/';
+                } else {
+                    alert(data.error || "خطا در ارسال کد.");
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

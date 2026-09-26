@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAHFLIX</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+        
+        :root {
+            --primary-red: #E50914;
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+            --text-muted: #888888;
+            --header-bg: #161616;
+            --nav-bg: #1a1a1a;
+            --icon-inactive: #888888;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --nav-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            --card-bg: rgba(25, 25, 25, 0.6);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f4f4f6;
+            --text-color: #111111;
+            --text-muted: #666666;
+            --header-bg: #ffffff;
+            --nav-bg: #ffffff;
+            --icon-inactive: #999999;
+            --card-border: rgba(0, 0, 0, 0.08);
+            --nav-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; transition: background-color 0.3s ease, color 0.3s ease, fill 0.3s ease; }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding-top: 85px; 
+            padding-bottom: 100px; 
+            min-height: 100vh; 
+        }
+
+        /* هدر شناور کپسولی */
+        .app-header { 
+            position: fixed; 
+            top: 15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 92%; 
+            max-width: 800px; 
+            height: 60px; 
+            background: var(--header-bg); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 18px; 
+            z-index: 1000; 
+            border: 1px solid var(--card-border); 
+            border-radius: 20px; 
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); 
+        }
+        [data-theme="light"] .app-header { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); }
+        .logo-img { height: 80px; filter: drop-shadow(0 2px 4px rgba(229, 9, 20, 0.3)); padding-top: 15px; }
+
+        /* بخش دکمه‌های هدر (زنگوله و تم) */
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .header-icon-btn {
+            background: var(--card-border); border: none; cursor: pointer;
+            width: 38px; height: 38px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; transition: 0.2s; color: var(--text-color);
+        }
+        .header-icon-btn:hover { background: rgba(229, 9, 20, 0.15); color: var(--primary-red); }
+        .header-icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .theme-toggle-btn svg { width: 20px; height: 20px; fill: var(--primary-red); }
+        
+        .notif-badge {
+            position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
+            background: var(--primary-red); border-radius: 50%; display: none;
+        }
+
+        html[data-theme="dark"] #moon-icon { display: none; }
+        html[data-theme="dark"] #sun-icon { display: block; }
+        html[data-theme="light"] #moon-icon { display: block; }
+        html[data-theme="light"] #sun-icon { display: none; }
+        
+        /* نوبار پایین */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: var(--nav-bg); border-radius: 25px; display: flex; justify-content: space-between; padding: 10px 15px; box-shadow: var(--nav-shadow); z-index: 1000; border: 1px solid var(--card-border); }
+        .nav-item { position: relative; display: flex; flex-direction: column; align-items: center; text-decoration: none; width: 60px; padding: 5px 0; transition: all 0.3s ease; }
+        .nav-icon { width: 26px; height: 26px; color: var(--icon-inactive); margin-bottom: 4px; transition: all 0.3s ease; z-index: 2; display: flex; justify-content: center; align-items: center; }
+        .nav-icon svg { width: 100%; height: 100%; fill: currentColor; }
+        .nav-text { font-size: 0.65rem; color: var(--icon-inactive); font-weight: 600; transition: all 0.3s ease; z-index: 2; }
+        .nav-item.active .nav-icon { color: var(--primary-red); transform: translateY(-2px); }
+        .nav-item.active .nav-text { color: var(--primary-red); }
+        .nav-item.active::before { content: ''; position: absolute; top: -10px; width: 28px; height: 3px; background-color: var(--primary-red); border-radius: 0 0 5px 5px; box-shadow: 0 2px 10px rgba(229, 9, 20, 0.8); z-index: 3; }
+        .nav-item.active::after { content: ''; position: absolute; top: -10px; width: 50px; height: 45px; background: linear-gradient(to bottom, rgba(229, 9, 20, 0.25) 0%, transparent 100%); clip-path: polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%); -webkit-clip-path: polygon(22% 0%, 78% 0%, 100% 100%, 0% 100%); z-index: 1; pointer-events: none; }
+
+        /* دراور اعلان‌ها */
+        .notif-drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .notif-drawer-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .notif-drawer {
+            position: fixed; top: 0; right: -360px; width: 100%; max-width: 340px; height: 100vh;
+            background: var(--nav-bg); border-left: 1px solid var(--card-border);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5); z-index: 2001; padding: 20px;
+            display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .notif-drawer.show { right: 0; }
+
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--card-border); }
+        .drawer-title { font-size: 1rem; font-weight: 800; }
+        .clear-notifs-btn { background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
+        .clear-notifs-btn:hover { color: var(--primary-red); }
+
+        .notif-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .notif-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+            padding: 12px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px;
+        }
+        .notif-card-time { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* توست پیام مدرن */
+        .toast-container {
+            position: fixed; top: 25px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .toast {
+            pointer-events: auto; min-width: 280px; max-width: 90vw; padding: 12px 18px;
+            border-radius: 14px; font-size: 0.88rem; font-weight: 700; display: flex;
+            align-items: center; justify-content: center; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4); animation: slideDown 0.3s ease;
+        }
+        .toast.success { background: rgba(34, 197, 94, 0.95); color: #fff; }
+        .toast.error { background: rgba(229, 9, 20, 0.95); color: #fff; }
+        .toast.info { background: rgba(30, 30, 30, 0.95); border: 1px solid var(--card-border); color: #fff; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="app-header">
+        <a href="{% url 'home' %}"><img src="{% static 'image/logo.png' %}" alt="MAHFLIX" class="logo-img"></a>
+        
+        <div class="header-actions">
+            <!-- آیکون زنگوله -->
+            <button class="header-icon-btn" onclick="toggleNotifDrawer()" title="اعلان‌ها">
+                <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                <span class="notif-badge" id="notifBadge"></span>
+            </button>
+
+            <!-- آیکون تغییر تم -->
+            <button class="header-icon-btn theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="تغییر تم">
+                <svg id="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06z"/></svg>
+                <svg id="moon-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- دراور اعلان‌ها -->
+    <div class="notif-drawer-overlay" id="notifOverlay" onclick="toggleNotifDrawer()"></div>
+    <div class="notif-drawer" id="notifDrawer">
+        <div class="drawer-header">
+            <span class="drawer-title">اعلان‌ها</span>
+            <button class="clear-notifs-btn" onclick="clearNotifications()">پاک کردن همه</button>
+        </div>
+        <div class="notif-list" id="notifListContainer">
+            <span style="color:var(--text-muted);font-size:0.8rem;text-align:center;margin-top:20px;">هیچ اعلانی وجود ندارد.</span>
+        </div>
+    </div>
+
+    <!-- کانتینر پیام‌های Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <nav class="bottom-nav">
+        <a href="{% url 'home' %}" class="nav-item {% block nav_home %}{% endblock %}">
+            <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><span class="nav-text">خانه</span>
+        </a>
+        <a href="{% url 'movies' %}" class="nav-item {% block nav_movies %}{% endblock %}">
+            <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg></div><span class="nav-text">فیلم‌ها</span>
+        </a>
+        <a href="{% url 'search' %}" class="nav-item {% block nav_search %}{% endblock %}">
+            <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><span class="nav-text">جستجو</span>
+        </a>
+        <a href="{% url 'wallet' %}" class="nav-item {% block nav_wallet %}{% endblock %}">
+            <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .89-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"/><circle cx="16" cy="12" r="1.5"/></svg></div><span class="nav-text">کیف پول</span>
+        </a>
+        <a href="{% url 'profile' %}" class="nav-item {% block nav_profile %}{% endblock %}">
+            <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><span class="nav-text">پروفایل</span>
+        </a>
+    </nav>
+
+    <script>
+        // خواندن تم ذخیره شده به محض لود صفحه
+        const savedTheme = localStorage.getItem('app_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // تابع دکمه تغییر تم
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('app_theme', newTheme);
+        }
+
+        // بررسی ورود کاربر
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // سیستم توست نوتیفیکیشن
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        // سیستم مدیریت اعلان‌ها
+        window.addNotification = function(text) {
+            let notifs = JSON.parse(localStorage.getItem('mahflix_notifs') || '[]');
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            notifs.unshift({ text, time: timeStr, id: Date.now() });
+            localStorage.setItem('mahflix_notifs', JSON.stringify(notifs));
+            renderNotifications();
+        };
+
+        function renderNotifications() {
+            let notifs = JSON.parse(localStorage.getItem('mahflix_notifs') || '[]');
+            const list = document.getElementById('notifListContainer');
+            const badge = document.getElementById('notifBadge');
+
+            if (notifs.length > 0) {
+                badge.style.display = 'block';
+                let html = '';
+                notifs.forEach(n => {
+                    html += `
+                        <div class="notif-card">
+                            <div>${n.text}</div>
+                            <span class="notif-card-time">${n.time}</span>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            } else {
+                badge.style.display = 'none';
+                list.innerHTML = '<span style="color:var(--text-muted);font-size:0.8rem;text-align:center;margin-top:20px;">هیچ اعلانی وجود ندارد.</span>';
+            }
+        }
+
+        window.clearNotifications = function() {
+            localStorage.removeItem('mahflix_notifs');
+            renderNotifications();
+        };
+
+        window.toggleNotifDrawer = function() {
+            document.getElementById('notifOverlay').classList.toggle('show');
+            document.getElementById('notifDrawer').classList.toggle('show');
+        };
+
+        renderNotifications();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

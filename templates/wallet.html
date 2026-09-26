@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav_wallet %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header { width: 90%; max-width: 800px; margin: 0 auto 15px auto; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 1.1rem; font-weight: 800; border-right: 4px solid var(--primary-red); padding-right: 10px; color: var(--text-color); }
+
+    .plan-list { display: flex; flex-direction: column; gap: 12px; width: 90%; max-width: 800px; margin: 0 auto 30px auto; }
+    .plan-row { 
+        background: var(--card-bg); border: 1px solid var(--card-border); 
+        border-radius: 16px; padding: 15px 18px; 
+        display: flex; justify-content: space-between; align-items: center; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        position: relative; overflow: hidden;
+    }
+    .plan-row.premium { border-color: var(--primary-red); box-shadow: 0 0 15px rgba(229, 9, 20, 0.2); }
+    .premium-badge { position: absolute; top: 0; right: 0; background: var(--primary-red); color: #fff; font-size: 0.6rem; font-weight: bold; padding: 3px 10px; border-radius: 0 0 0 10px; }
+
+    .plan-info { display: flex; flex-direction: column; gap: 5px; }
+    .plan-name { font-size: 1rem; font-weight: 800; color: var(--text-color); margin-top: 5px; }
+    .plan-price { font-size: 1.1rem; font-weight: 900; color: var(--primary-red); }
+    .plan-price span { font-size: 0.75rem; color: var(--text-muted); font-weight: normal; }
+    .plan-actions { display: flex; gap: 8px; align-items: center; }
+    
+    .btn-detail { 
+        background: transparent; color: var(--text-color); border: 1px solid var(--text-muted); 
+        padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.3s; 
+    }
+    .btn-detail:hover { border-color: var(--primary-red); color: var(--primary-red); }
+    
+    .btn-buy-small { background: var(--primary-red); color: #fff; text-decoration: none; padding: 7px 15px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; transition: 0.3s; border: none; cursor: pointer; }
+    .btn-buy-small:hover { background: #b81d24; }
+
+    .wallet-box { 
+        width: 90%; max-width: 800px; margin: 0 auto 25px auto; 
+        background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(15, 15, 15, 0.9)); 
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; 
+        padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4); backdrop-filter: blur(10px); 
+    }
+    .wallet-info { display: flex; flex-direction: column; gap: 5px; }
+    .wallet-label { font-size: 0.85rem; color: #ccc; }
+    .wallet-balance { font-size: 1.8rem; font-weight: 900; color: #fff; display: flex; align-items: baseline; gap: 5px; }
+    .wallet-balance span { font-size: 0.9rem; color: #aaa; font-weight: normal; }
+    
+    .btn-add-funds { background: var(--primary-red); border: none; color: white; padding: 12px 15px; border-radius: 14px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3); }
+    .btn-add-funds:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(229, 9, 20, 0.5); }
+    .btn-add-funds svg { width: 16px; height: 16px; fill: currentColor; }
+
+    .transactions-container { width: 90%; max-width: 800px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
+    .trx-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
+    .trx-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .trx-right { display: flex; align-items: center; gap: 12px; }
+    .trx-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
+    .trx-icon.deposit { background: rgba(34, 197, 94, 0.1); color: #22C55E; }
+    .trx-icon.purchase { background: rgba(229, 9, 20, 0.1); color: var(--primary-red); }
+    .trx-icon svg { width: 22px; height: 22px; fill: currentColor; }
+    .trx-details { display: flex; flex-direction: column; gap: 3px; }
+    .trx-title { font-size: 0.9rem; font-weight: bold; color: var(--text-color); }
+    .trx-date { font-size: 0.75rem; color: var(--text-muted); }
+    .trx-amount { font-size: 0.95rem; font-weight: 900; }
+    .trx-amount.positive { color: #22C55E; }
+    .trx-amount.negative { color: var(--text-color); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .bottom-sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 500px; background: var(--nav-bg); border-radius: 25px 25px 0 0; padding: 25px; z-index: 1101; box-shadow: 0 -10px 40px rgba(0,0,0,0.3); border-top: 1px solid var(--card-border); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .bottom-sheet.show { transform: translateX(-50%) translateY(0); }
+    
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 15px; }
+    .sheet-title { font-size: 1.2rem; font-weight: 900; color: var(--text-color); }
+    .close-btn { background: var(--card-border); border: none; color: var(--text-color); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+    .close-btn:hover { background: var(--primary-red); color: #fff; }
+
+    .sheet-price { font-size: 1.6rem; font-weight: 900; color: var(--primary-red); text-align: center; margin-bottom: 20px; }
+    .sheet-price span { font-size: 0.9rem; color: var(--text-muted); font-weight: normal; }
+    .sheet-features { list-style: none; margin-bottom: 25px; padding: 0 10px; }
+    .sheet-features li { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-color); margin-bottom: 12px; }
+    .sheet-features li svg { width: 18px; height: 18px; fill: #22C55E; }
+
+    .btn-buy-large { display: block; width: 100%; background: linear-gradient(90deg, #E50914, #b81d24); color: #fff; text-decoration: none; padding: 14px; border-radius: 14px; font-size: 1.1rem; font-weight: bold; text-align: center; border: none; cursor: pointer; }
+
+    .fund-input { width: 100%; padding: 16px; margin-bottom: 25px; background: rgba(255, 255, 255, 0.05); border: 1.5px solid var(--card-border); border-radius: 14px; color: var(--text-color); font-size: 1.1rem; outline: none; text-align: center; font-weight: bold; }
+    [data-theme="light"] .fund-input { background: rgba(0, 0, 0, 0.03); }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- 1. بخش خرید اشتراک -->
+    <div class="section-header" style="margin-top: 10px;">
+        <h2 class="section-title">خرید اشتراک</h2>
+    </div>
+    <div class="plan-list" id="planListContainer">
+        <span style="color:var(--text-muted);font-size:0.85rem;padding:0 10px;">در حال بارگذاری پلن‌ها...</span>
+    </div>
+
+    <!-- 2. باکس موجودی کیف پول -->
+    <div class="wallet-box">
+        <div class="wallet-info">
+            <span class="wallet-label">موجودی کیف پول شما</span>
+            <div class="wallet-balance"><span id="userWalletBalance">۰</span> <span>تومان</span></div>
+        </div>
+        <button class="btn-add-funds" onclick="openFundSheet()">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            افزایش موجودی
+        </button>
+    </div>
+
+    <!-- 3. تراکنش‌های اخیر -->
+    <div class="section-header">
+        <h2 class="section-title">تراکنش‌های اخیر</h2>
+    </div>
+    <div class="transactions-container" id="transactionsList">
+        <span style="color:var(--text-muted);font-size:0.85rem;padding:10px;">در حال دریافت سوابق...</span>
+    </div>
+
+    <!-- دکمه‌های قبل و بعد صفحه تراکنش‌ها -->
+    <div id="trxPagination" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 15px auto 35px auto; width: 90%; max-width: 800px;">
+        <button id="prevPageBtn" class="btn-detail" onclick="changeTrxPage(-1)">صفحه قبلی</button>
+        <span id="pageIndicator" style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold;">صفحه ۱ از ۱</span>
+        <button id="nextPageBtn" class="btn-detail" onclick="changeTrxPage(1)">صفحه بعدی</button>
+    </div>
+
+    <!-- 4. پاپ‌آپ‌ها -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeAllSheets()"></div>
+    
+    <!-- پاپ‌آپ جزئیات و خرید اشتراک -->
+    <div class="bottom-sheet" id="planSheet">
+        <div class="sheet-header">
+            <h3 class="sheet-title" id="sheetTitle">جزئیات اشتراک</h3>
+            <button class="close-btn" onclick="closeAllSheets()">×</button>
+        </div>
+        <div class="sheet-price" id="sheetPrice">۰ <span>تومان</span></div>
+        <ul class="sheet-features" id="sheetFeatures"></ul>
+        <button class="btn-buy-large" id="confirmBuyBtn">خرید و فعال‌سازی</button>
+    </div>
+
+    <!-- پاپ‌آپ افزایش موجودی -->
+    <div class="bottom-sheet" id="fundSheet">
+        <div class="sheet-header">
+            <h3 class="sheet-title">افزایش موجودی</h3>
+            <button class="close-btn" onclick="closeAllSheets()">×</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 20px;">
+            مبلغ مورد نظر خود را به تومان وارد کنید:
+        </p>
+        <div>
+            <input type="number" id="depositAmount" class="fund-input" placeholder="مثلاً: ۵۰۰۰۰" required>
+            <button type="button" class="btn-buy-large" onclick="submitDeposit()">پرداخت و شارژ کیف پول</button>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function() {
+    const token = localStorage.getItem('access_token');
+    let activePlanId = null;
+    let currentTrxPage = 1;
+
+    window.loadWalletData = function(page = 1) {
+        currentTrxPage = page;
+        fetch(`/api/finance/dashboard/?page=${page}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(data => {
+            // ۱. آپدیت موجودی
+            if (data.balance !== undefined) {
+                document.getElementById('userWalletBalance').innerText = data.balance;
+            }
+
+            // ۲. رندر پلن‌های اشتراک (این بخش جا افتاده بود)
+            const planContainer = document.getElementById('planListContainer');
+            if (data.plans && data.plans.length > 0) {
+                let plansHtml = '';
+                data.plans.forEach(plan => {
+                    const priceFormatted = Number(plan.price).toLocaleString('fa-IR');
+                    // ارسال امن آبجکت به تابع باز کردن شیت
+                    const planJson = JSON.stringify(plan).replace(/'/g, "&apos;");
+                    plansHtml += `
+                        <div class="plan-row ${plan.is_special ? 'premium' : ''}">
+                            ${plan.is_special ? '<div class="premium-badge">ویژه</div>' : ''}
+                            <div class="plan-info">
+                                <div class="plan-name">${plan.title}</div>
+                                <div class="plan-price">${priceFormatted} <span>تومان</span></div>
+                            </div>
+                            <div class="plan-actions">
+                                <button type="button" class="btn-detail" onclick='openPlanSheet(${planJson})'>جزئیات</button>
+                                <button type="button" class="btn-buy-small" onclick='quickBuy(${plan.id})'>خرید</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                planContainer.innerHTML = plansHtml;
+            } else {
+                planContainer.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;padding:0 10px;">پلنی در پنل ادمین تعریف نشده است.</span>';
+            }
+
+            // ۳. رندر تراکنش‌ها
+            const trxContainer = document.getElementById('transactionsList');
+            const paginationEl = document.getElementById('trxPagination');
+            
+            if (!data.transactions || data.transactions.length === 0) {
+                trxContainer.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;padding:10px;">هنوز تراکنشی ثبت نشده است.</span>';
+                if (paginationEl) paginationEl.style.display = 'none';
+            } else {
+                if (paginationEl) paginationEl.style.display = 'flex';
+                let trxHtml = '';
+                data.transactions.forEach(t => {
+                    const isDeposit = t.transaction_type === 'deposit';
+                    const amountFormatted = Number(t.amount).toLocaleString('fa-IR');
+                    trxHtml += `
+                        <div class="trx-item">
+                            <div class="trx-right">
+                                <div class="trx-icon ${isDeposit ? 'deposit' : 'purchase'}">
+                                    <svg viewBox="0 0 24 24"><path d="${isDeposit ? 'M19 15l-7 7-7-7h4V3h6v12h4z' : 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'}"/></svg>
+                                </div>
+                                <div class="trx-details">
+                                    <span class="trx-title">${t.title}</span>
+                                    <span class="trx-date">${t.formatted_date}</span>
+                                </div>
+                            </div>
+                            <div class="trx-amount ${isDeposit ? 'positive' : 'negative'}">
+                                ${isDeposit ? '+' : '-'} ${amountFormatted} ت
+                            </div>
+                        </div>
+                    `;
+                });
+                trxContainer.innerHTML = trxHtml;
+
+                if (data.pagination) {
+                    const p = data.pagination;
+                    document.getElementById('pageIndicator').innerText = `صفحه ${p.current_page} از ${p.total_pages}`;
+                    
+                    const prevBtn = document.getElementById('prevPageBtn');
+                    const nextBtn = document.getElementById('nextPageBtn');
+                    
+                    prevBtn.disabled = !p.has_previous;
+                    prevBtn.style.opacity = p.has_previous ? "1" : "0.4";
+                    prevBtn.style.cursor = p.has_previous ? "pointer" : "not-allowed";
+
+                    nextBtn.disabled = !p.has_next;
+                    nextBtn.style.opacity = p.has_next ? "1" : "0.4";
+                    nextBtn.style.cursor = p.has_next ? "pointer" : "not-allowed";
+                }
+            }
+        })
+        .catch(err => console.error("Error loading wallet data:", err));
+    };
+
+    window.changeTrxPage = function(direction) {
+        window.loadWalletData(currentTrxPage + direction);
+    };
+
+    window.openPlanSheet = function(plan) {
+        activePlanId = plan.id;
+        document.getElementById('sheetTitle').innerText = plan.title;
+        document.getElementById('sheetPrice').innerHTML = Number(plan.price).toLocaleString('fa-IR') + ' <span>تومان</span>';
+        
+        const featuresList = document.getElementById('sheetFeatures');
+        featuresList.innerHTML = '';
+        if (plan.feature_list) {
+            plan.feature_list.forEach(f => {
+                const li = document.createElement('li');
+                li.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> ${f}`;
+                featuresList.appendChild(li);
+            });
+        }
+
+        document.getElementById('confirmBuyBtn').onclick = () => quickBuy(plan.id);
+        document.getElementById('modalOverlay').classList.add('show');
+        document.getElementById('planSheet').classList.add('show');
+    };
+
+    window.quickBuy = function(planId) {
+        fetch(`/api/finance/buy-plan/${planId}/`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json().then(data => ({ status: res.status, body: data })))
+        .then(res => {
+            if (res.status === 200) {
+                showToast(res.body.message, "success");
+                addNotification(res.body.message); // ثبت در دراور اعلان‌ها
+                closeAllSheets();
+                loadWalletData();
+            } else {
+                showToast(res.body.error || "خطا در خرید اشتراک.", "error");
+            }
+        })
+        .catch(() => showToast("خطا در ارتباط با سرور.", "error"));
+    };
+
+    window.submitDeposit = function() {
+        const input = document.getElementById('depositAmount');
+        const amount = parseInt(input.value);
+        if (!amount || amount < 10000) {
+            showToast("حداقل مبلغ شارژ ۱۰,۰۰۰ تومان است.", "error");
+            return;
+        }
+
+        fetch('/api/finance/deposit/', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount: amount })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.balance) {
+                const msg = `کیف پول با موفقیت به مبلغ ${Number(amount).toLocaleString('fa-IR')} تومان شارژ شد.`;
+                showToast(msg, "success");
+                addNotification(msg); // ثبت در دراور اعلان‌ها
+                input.value = '';
+                closeAllSheets();
+                loadWalletData();
+            } else {
+                showToast(data.error || "خطا در افزایش موجودی.", "error");
+            }
+        })
+        .catch(() => showToast("خطا در ارتباط با سرور.", "error"));
+    };
+
+    window.openFundSheet = function() {
+        document.getElementById('modalOverlay').classList.add('show');
+        document.getElementById('fundSheet').classList.add('show');
+    };
+
+    window.closeAllSheets = function() {
+        document.getElementById('modalOverlay').classList.remove('show');
+        document.getElementById('planSheet').classList.remove('show');
+        document.getElementById('fundSheet').classList.remove('show');
+    };
+
+    loadWalletData();
+})();
+</script>
+{% endblock %}

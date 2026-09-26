@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav_search %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-header { width: 90%; max-width: 800px; margin: 0 auto 15px auto; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 1.1rem; font-weight: 800; border-right: 4px solid var(--primary-red); padding-right: 10px; color: var(--text-color); }
+
+    .search-wrapper {
+        width: 90%; max-width: 800px; margin: 10px auto 25px auto;
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%; padding: 16px 50px 16px 20px;
+        background: var(--card-bg); border: 1.5px solid var(--card-border);
+        border-radius: 18px; color: var(--text-color); font-size: 1rem;
+        transition: all 0.3s ease; outline: none;
+        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .search-input:focus {
+        border-color: var(--primary-red);
+        box-shadow: 0 0 15px rgba(229, 9, 20, 0.25);
+    }
+    
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .search-icon {
+        position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+        width: 22px; height: 22px; fill: var(--text-muted);
+        transition: fill 0.3s ease; pointer-events: none;
+    }
+    .search-input:focus ~ .search-icon { fill: var(--primary-red); }
+
+    .clear-btn {
+        position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.1); border: none; color: var(--text-color);
+        width: 26px; height: 26px; border-radius: 50%; font-size: 1.1rem;
+        display: none; justify-content: center; align-items: center; cursor: pointer;
+    }
+    .clear-btn:hover { background: var(--primary-red); color: #fff; }
+
+    /* دکمه‌های تب مرتب‌سازی */
+    .filter-tabs {
+        display: flex; gap: 8px; width: 90%; max-width: 800px; margin: 0 auto 15px auto;
+    }
+    .tab-btn {
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        color: var(--text-muted); padding: 7px 14px; border-radius: 12px;
+        font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active {
+        background: var(--primary-red); color: #fff; border-color: var(--primary-red);
+        box-shadow: 0 3px 10px rgba(229, 9, 20, 0.35);
+    }
+
+    .result-list {
+        display: flex; flex-direction: column; gap: 14px;
+        width: 90%; max-width: 800px; margin: 0 auto 30px auto;
+    }
+    
+    /* کارت فیلم افقی بازطراحی شده */
+    .result-card {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 18px; padding: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        transition: transform 0.2s, border-color 0.2s;
+    }
+    .result-card:hover { border-color: rgba(229, 9, 20, 0.4); }
+    
+    .card-right-content {
+        display: flex; gap: 14px; align-items: center; flex: 1; overflow: hidden;
+    }
+
+    .result-img {
+        width: 80px; height: 105px; border-radius: 12px; object-fit: cover;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0;
+    }
+    
+    .result-details {
+        display: flex; flex-direction: column; gap: 6px; overflow: hidden;
+    }
+    
+    .result-title { 
+        font-size: 0.95rem; font-weight: 800; color: var(--text-color); 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    
+    .result-views {
+        display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--text-muted);
+    }
+    .result-views svg { width: 14px; height: 14px; fill: var(--text-muted); }
+
+    /* ستون اکشن‌ها در سمت چپ باکس */
+    .card-left-actions {
+        display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0;
+    }
+
+    .action-badge-btn {
+        display: flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border); padding: 5px 10px; border-radius: 10px;
+        color: var(--text-color); font-size: 0.78rem; font-weight: 700; text-decoration: none;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .action-badge-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    .action-badge-btn svg { width: 15px; height: 15px; }
+
+    .btn-watch-action {
+        background: var(--primary-red); color: #fff; border: none;
+        padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
+        cursor: pointer; text-decoration: none; transition: 0.2s;
+    }
+    .btn-watch-action:hover { background: #b81d24; }
+
+    #search-results-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+    #search-results-section.show { display: block; opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- ۱. نوار جستجو -->
+    <div class="search-wrapper">
+        <input type="text" class="search-input" id="searchInput" placeholder="نام فیلم، سریال یا ژانر...">
+        <svg class="search-icon" viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <button class="clear-btn" id="clearBtn" onclick="clearSearch()">×</button>
+    </div>
+
+    <!-- ۲. بخش نتایج زنده جستجو -->
+    <div id="search-results-section">
+        <div class="section-header">
+            <h2 class="section-title">نتایج جستجو</h2>
+        </div>
+        <div class="result-list" id="search-results-container"></div>
+    </div>
+
+    <!-- ۳. بخش پیشنهادهای محبوب با فیلتر مرتب‌سازی -->
+    <div id="suggested-section">
+        <div class="section-header">
+            <h2 class="section-title">پیشنهادهای محبوب</h2>
+        </div>
+        
+        <!-- تب‌های انتخاب معیار مرتب‌سازی -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" onclick="sortSuggested('likes', this)">محبوب‌ترین (لایک)</button>
+            <button class="tab-btn" onclick="sortSuggested('views', this)">پربازدیدترین</button>
+            <button class="tab-btn" onclick="sortSuggested('comments', this)">پربحث‌ترین</button>
+        </div>
+
+        <div class="result-list" id="suggested-container">
+            <span style="color: var(--text-muted); font-size: 0.85rem; padding: 0 10px;">در حال بارگذاری...</span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const searchResultsSection = document.getElementById('search-results-section');
+    const resultsContainer = document.getElementById('search-results-container');
+    const suggestedContainer = document.getElementById('suggested-container');
+
+    let allVideos = [];
+
+    function renderCard(item) {
+        const cover = `/static/${item.cover_path}`;
+        
+        // استخراج رنگ‌های وضعیت
+        const heartColor = item.is_liked ? '#E50914' : 'var(--text-muted)';
+        const viewColor = item.is_watched ? '#3B82F6' : 'var(--text-muted)';
+        const commentColor = item.has_commented ? '#22C55E' : 'var(--text-muted)';
+
+        // نشان ویژه
+        const premiumBadge = item.is_premium_only ? `<span style="background: var(--primary-red); color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-radius: 6px; margin-right: 6px;">ویژه</span>` : '';
+
+        return `
+            <div class="result-card" id="card-${item.id}">
+                <div class="card-right-content">
+                    <img src="${cover}" alt="${item.title}" class="result-img">
+                    <div class="result-details">
+                        <div class="result-title" style="display: flex; align-items: center;">
+                            ${item.title}
+                            ${premiumBadge}
+                        </div>
+                        <div class="result-views">
+                            <svg viewBox="0 0 24 24" id="search-view-icon-${item.id}" style="fill: ${viewColor};"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <span id="view-count-${item.id}">${item.views_count} بازدید</span>
+                        </div>
+                        <button class="btn-watch-action" onclick="handleWatch(${item.id})" style="width: fit-content; margin-top: 5px;">تماشا</button>
+                    </div>
+                </div>
+
+                <div class="card-left-actions">
+                    <button class="action-badge-btn" onclick="toggleSearchLike(${item.id})" title="لایک">
+                        <span id="like-count-${item.id}">${item.likes_count}</span>
+                        <svg viewBox="0 0 24 24" id="heart-icon-${item.id}" style="fill: ${heartColor};">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </button>
+                    <a href="/comments/?video_id=${item.id}" class="action-badge-btn" title="مشاهده و ثبت نظر">
+                        <span>${item.comments_count || 0}</span>
+                        <svg viewBox="0 0 24 24" style="fill: ${commentColor};"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+        const token = localStorage.getItem('access_token');
+        const authHeaders = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+        // لود اولیه با ارسال هدر احراز هویت
+        fetch('/api/content/list/', { headers: authHeaders })
+            .then(res => res.json())
+            .then(data => {
+                allVideos = data;
+                sortSuggested('likes', document.querySelector('.tab-btn.active'));
+            });
+
+    // لاجیک مرتب‌سازی تب‌ها
+    window.sortSuggested = function(criteria, btnElement) {
+        if (btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        let sorted = [...allVideos];
+        if (criteria === 'likes') {
+            sorted.sort((a, b) => b.likes_count - a.likes_count);
+        } else if (criteria === 'views') {
+            sorted.sort((a, b) => b.views_count - a.views_count);
+        } else if (criteria === 'comments') {
+            sorted.sort((a, b) => (b.comments_count || 0) - (a.comments_count || 0));
+        }
+
+        let html = '';
+        sorted.forEach(item => html += renderCard(item));
+        suggestedContainer.innerHTML = html || '<span style="color:var(--text-muted);font-size:0.85rem;">موردی یافت نشد.</span>';
+    };
+
+    // سرچ با وقفه
+    let debounceTimer;
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length > 0) {
+            clearBtn.style.display = 'flex';
+            searchResultsSection.classList.add('show');
+            resultsContainer.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">در حال جستجو...</span>';
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/api/content/search/?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(results => {
+                        if (results.length === 0) {
+                            resultsContainer.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">فیلمی مطابق جستجوی شما پیدا نشد.</span>';
+                            return;
+                        }
+                        let html = '';
+                        results.forEach(item => html += renderCard(item));
+                        resultsContainer.innerHTML = html;
+                    });
+            }, 300);
+        } else {
+            clearBtn.style.display = 'none';
+            searchResultsSection.classList.remove('show');
+            resultsContainer.innerHTML = '';
+        }
+    });
+
+    window.clearSearch = function() {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        searchResultsSection.classList.remove('show');
+        resultsContainer.innerHTML = '';
+        searchInput.focus();
+    };
+
+    // لایک اختصاصی کارت‌ها در صفحه سرچ
+// لایک اختصاصی با توست
+    window.toggleSearchLike = function(videoId) {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            showToast("برای لایک کردن لطفاً ابتدا وارد حساب شوید.", "error");
+            return;
+        }
+
+        fetch(`/api/content/${videoId}/like/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.likes_count !== undefined) {
+                const countEl = document.getElementById(`like-count-${videoId}`);
+                const heartEl = document.getElementById(`heart-icon-${videoId}`);
+                if (countEl) countEl.innerText = data.likes_count;
+                if (heartEl) heartEl.style.fill = data.liked ? '#E50914' : 'var(--text-muted)';
+                
+                showToast(data.liked ? "فیلم به علاقه‌مندی‌ها اضافه شد." : "لایک حذف شد.", "info");
+            }
+        });
+    };
+
+    // بررسی قطعی دسترسی کاربر ویژه و پخش ویدیو
+    window.handleWatch = function(videoId) {
+        const token = localStorage.getItem('access_token');
+        const reqHeaders = token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
+        fetch(`/api/content/${videoId}/watch/`, {
+            method: 'POST',
+            headers: reqHeaders
+        })
+        .then(async res => {
+            const data = await res.json();
+            
+            // اگر ویدیو ویژه بود و کاربر اشتراک نداشت
+            if (res.status === 403) {
+                showToast("این محتوا مخصوص کاربران ویژه است! در حال انتقال به کیف پول...", "error");
+                addNotification("برای تماشای فیلم‌های نشان‌دار، اشتراک ویژه تهیه کنید.");
+                setTimeout(() => {
+                    window.location.href = '/wallet/';
+                }, 2000);
+                return;
+            }
+
+            if (!res.ok) {
+                showToast(data.error || "خطایی رخ داد.", "error");
+                return;
+            }
+
+            // بروزرسانی شمارنده و رنگ آیکون بازدید
+            const viewEl = document.getElementById(`view-count-${videoId}`);
+            if (viewEl && data.views_count) viewEl.innerText = `${data.views_count} بازدید`;
+            const sViewIcon = document.getElementById(`search-view-icon-${videoId}`);
+            if (sViewIcon) sViewIcon.style.fill = '#3B82F6';
+
+            // باز کردن ویدیو
+            if (data.video_url && data.video_url.trim() !== '') {
+                window.open(data.video_url, '_blank');
+            } else {
+                showToast("لینک پخشی برای این فیلم تنظیم نشده است.", "error");
+            }
+        })
+        .catch(err => console.error("Watch error:", err));
+    };
+})();
+</script>
+{% endblock %}

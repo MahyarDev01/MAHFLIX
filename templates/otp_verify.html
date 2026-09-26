@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تایید کد | MAHFLIX</title>
+    <style>
+        /* تنظیمات پایه و فونت */
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            /* مسیر عکس بک‌گراند */
+            background: linear-gradient(rgba(10, 10, 10, 0.8), rgba(10, 10, 10, 0.95)), url('../static/image/bg-movies.jpg') no-repeat center center/cover;
+            background-color: #0a0a0a;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* بخش لوگو بیرون از باکس */
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .brand-logo img {
+            max-width: 320px; 
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(229, 9, 20, 0.4));
+        }
+
+        /* کارت شیشه‌ای و مدرن فرم */
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(25, 25, 25, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        /* عنوان فرم */
+        .form-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        /* متن زیر عنوان */
+        .subtitle {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .subtitle span {
+            color: #E50914;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* استایل کانتینر کدهای 6 رقمی */
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 30px;
+            direction: ltr; /* تایپ راحت‌تر اعداد از چپ به راست */
+        }
+
+        .otp-input {
+            width: 45px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: #E50914;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(229, 9, 20, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* دکمه‌های اصلی و ثانویه */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #E50914, #b81d24);
+            color: #0a0a0a;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+        }
+
+        .back-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* بخش تایمر و ارسال مجدد */
+        .resend-container {
+            font-size: 0.95rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        #timer {
+            font-weight: bold;
+            color: #E50914;
+            letter-spacing: 1px;
+        }
+
+        #resend-link {
+            display: none; /* تا وقتی تایمر صفر نشده مخفیه */
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        #resend-link:hover {
+            color: #E50914;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- لوگوی تصویر بیرون از باکس -->
+    <div class="brand-logo">
+        <img src="../static/image/full_logo.png" alt="MAHFLIX Logo">
+    </div>
+
+    <div class="login-card">
+        <!-- عنوان و متن زیرین -->
+        <h2 class="form-title">کد تایید را وارد کنید</h2>
+        <p class="subtitle">کد تایید به شماره <span>09123456789</span> ارسال شد.</p> <!-- این شماره رو بعدا توی جنگو داینامیک می‌کنیم -->
+
+        <form id="otpForm">
+            <!-- کانتینر 6 فیلد OTP -->
+            <div class="otp-container">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" required>
+            </div>
+
+            <!-- دکمه‌ها -->
+            <div class="btn-group">
+                <button type="submit" class="submit-btn">تایید کد</button>
+                <a href="/register/" class="back-btn">بازگشت و اصلاح شماره</a>
+            </div>
+            
+            <!-- تایمر و دکمه ارسال مجدد -->
+            <div class="resend-container">
+                <span id="timer-text">ارسال مجدد کد تا <span id="timer">02:00</span></span>
+                <a href="#" id="resend-link">ارسال مجدد کد تایید</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- اسکریپت برای مدیریت فوکوس inputها و تایمر -->
+    <script>
+        // لاجیک حرکت بین باکس‌های کد 6 رقمی
+        const inputs = document.querySelectorAll('.otp-input');
+
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                // فقط عدد قبول کنه و اگه وارد شد بره بعدی
+                if (e.target.value.length > 1) {
+                    e.target.value = e.target.value.slice(0, 1);
+                }
+                if (e.target.value !== '' && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                // با زدن دکمه بک‌اسپیس برگرده به فیلد قبلی
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // لاجیک تایمر 2 دقیقه‌ای
+        let timeLeft = 120; // 2 دقیقه به ثانیه
+        const timerElement = document.getElementById('timer');
+        const timerTextElement = document.getElementById('timer-text');
+        const resendLink = document.getElementById('resend-link');
+
+        const countdown = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerTextElement.style.display = 'none'; // مخفی کردن متن تایمر
+                resendLink.style.display = 'inline-block'; // نمایش دکمه ارسال مجدد
+            } else {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                
+                // فرمت کردن عدد به شکل 00:00
+                timerElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timeLeft--;
+            }
+        }, 1000);
+    </script>
+    <script>
+        // نمایش شماره موبایل کاربر در متن به صورت داینامیک
+        const phone = localStorage.getItem('auth_phone');
+        if(phone) document.querySelector('.subtitle span').innerText = phone;
+
+document.getElementById('otpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // جمع کردن ۶ رقم کد
+            let otp = "";
+            document.querySelectorAll('.otp-input').forEach(input => otp += input.value);
+            
+            const action = localStorage.getItem('auth_action');
+
+            if (action === 'register') {
+                const password = localStorage.getItem('auth_password');
+                const email = localStorage.getItem('auth_email') || ''; // دریافت ایمیل ذخیره شده
+
+                fetch('/api/users/register/verify/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        phone_number: phone, 
+                        otp: otp, 
+                        password: password,
+                        email: email // ارسال ایمیل به سرور
+                    })
+                }).then(res => res.json()).then(data => {
+                    if(data.tokens) {
+                        localStorage.setItem('access_token', data.tokens.access);
+                        localStorage.setItem('refresh_token', data.tokens.refresh);
+                        // پاکسازی حافظه موقت
+                        localStorage.removeItem('auth_phone');
+                        localStorage.removeItem('auth_email');
+                        localStorage.removeItem('auth_password');
+                        localStorage.removeItem('auth_action');
+                        window.location.href = '/home/';
+                    } else {
+                        alert(data.error || "کد اشتباه است.");
+                    }
+                });
+            } else if (action === 'forgot_password') {
+                localStorage.setItem('auth_otp', otp);
+                window.location.href = '/new-password/';
+            }
+        });
+    </script>
+</body>
+</html>

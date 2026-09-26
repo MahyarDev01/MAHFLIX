@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav_home %}active{% endblock %}
+{% block extra_css %}
+<style>
+    .banner-wrapper { 
+        position: relative; 
+        width: 90%; 
+        max-width: 800px; 
+        aspect-ratio: 1577 / 672; 
+        height: auto; 
+        margin: 0 auto 25px auto; 
+        border-radius: 20px; 
+        overflow: hidden; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4); 
+    }
+    .banner-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; object-fit: cover; }
+    .banner-slide.active { opacity: 1; }
+    .banner-overlay { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+
+    .stats-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 800px; margin: 0 auto 35px auto; }
+    .stat-box { background: var(--card-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 18px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.3s ease; }
+    .stat-box:hover { transform: translateY(-5px); }
+    .stat-icon { width: 28px; height: 28px; fill: var(--primary-red); margin-bottom: 8px; }
+    .stat-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+    .stat-number { font-size: 1.2rem; font-weight: 800; color: var(--text-color); }
+
+    .section-header { width: 90%; max-width: 800px; margin: 0 auto 15px auto; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 1.2rem; font-weight: 800; border-right: 4px solid var(--primary-red); padding-right: 10px; }
+    
+    .carousel { display: flex; overflow-x: auto; gap: 15px; padding: 0 5vw 20px 5vw; scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; align-items: center; min-height: 220px; }
+    .carousel::-webkit-scrollbar { display: none; }
+    
+    /* ابعاد بزرگ‌تر و راحت‌تر برای کلیک */
+    .movie-card { flex: 0 0 160px; /* از 130 به 160 افزایش یافت */display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .movie-img { width: 100%; height: 190px; /* از 140 به 190 افزایش یافت */object-fit: cover; }
+    .movie-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .movie-title { font-size: 0.9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* استایل آیکون‌های لایک و بازدید */
+    .movie-meta-icons { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted);}
+    .meta-item { display: flex; align-items: center; gap: 3px;}
+    .meta-item svg { width: 14px; height: 14px;}    
+
+    .title-row { display: flex; justify-content: space-between; align-items: center; gap: 5px; width: 100%; }
+    .movie-likes { display: flex; align-items: center; gap: 3px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+    .movie-likes svg { width: 13px; height: 13px; fill: var(--primary-red); }
+    
+    .btn-watch { background: var(--primary-red); color: #fff; text-align: center; text-decoration: none; font-size: 0.75rem; font-weight: bold; padding: 5px; border-radius: 6px; transition: background 0.3s; width: 100%; }
+    .btn-watch:hover { background: #b81d24; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- 1. بنر اسلایدی -->
+    <div class="banner-wrapper">
+        <img src="{% static 'image/banner.jpg' %}" class="banner-slide active" alt="Banner 1">
+        <img src="{% static 'image/banner.jpg' %}" class="banner-slide" alt="Banner 2">
+        <img src="{% static 'image/banner.jpg' %}" class="banner-slide" alt="Banner 3">
+        <div class="banner-overlay"></div>
+    </div>
+
+    <!-- 2. باکس‌های آمار -->
+    <div class="stats-container">
+        <div class="stat-box">
+            <svg class="stat-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="stat-title">لایک‌های شما</span>
+            <span class="stat-number" id="stat-user-likes">0</span>
+        </div>
+        <div class="stat-box">
+            <svg class="stat-icon" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            <span class="stat-title">نظرات شما</span>
+            <span class="stat-number" id="stat-user-comments">0</span>
+        </div>
+        <div class="stat-box">
+            <svg class="stat-icon" viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+            <span class="stat-title">دیده‌های شما</span>
+            <span class="stat-number" id="stat-user-watched">0</span>
+        </div>
+    </div>
+
+    <!-- 3. بخش فیلم‌ها -->
+    <div class="section-header">
+        <h2 class="section-title">فیلم‌ها</h2>
+    </div>
+    <div class="carousel" id="movies-carousel">
+        <span style="color: var(--text-muted); font-size: 0.85rem;">در حال بارگذاری...</span>
+    </div>
+
+    <!-- 4. بخش سریال‌ها -->
+    <div class="section-header" style="margin-top: 15px;">
+        <h2 class="section-title">سریال‌ها</h2>
+    </div>
+    <div class="carousel" id="series-carousel">
+        <span style="color: var(--text-muted); font-size: 0.85rem;">در حال بارگذاری...</span>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    // 1. اسلایدر اتوماتیک بنر
+    const slides = document.querySelectorAll('.banner-slide');
+    if (slides.length > 0) {
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+    }
+
+    function createCard(video) {
+        const cover = `/static/${video.cover_path}`;
+        const heartColor = video.is_liked ? '#E50914' : 'var(--text-muted)';
+        const viewColor = video.is_watched ? '#3B82F6' : 'var(--text-muted)';
+        const commentColor = video.has_commented ? '#22C55E' : 'var(--text-muted)';
+
+        const premiumBadge = video.is_premium_only ? `<div style="position: absolute; top: 8px; right: 8px; background: #E50914; color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 7px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">ویژه</div>` : '';
+
+        return `
+            <div class="movie-card" id="card-${video.id}" style="position: relative;">
+                ${premiumBadge}
+                <img src="${cover}" alt="${video.title}" class="movie-img">
+                <div class="movie-info">
+                    <div class="title-row">
+                        <div class="movie-title" title="${video.title}">${video.title}</div>
+                    </div>
+                    <div class="movie-meta-icons" style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
+                        <div class="meta-item" onclick="handleLike(${video.id})" style="cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                            <span class="likes-count" id="like-count-${video.id}">${video.likes_count}</span>
+                            <svg viewBox="0 0 24 24" id="heart-icon-${video.id}" style="width: 14px; height: 14px; fill: ${heartColor};">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 3px;">
+                            <span id="view-count-${video.id}">${video.views_count}</span>
+                            <svg viewBox="0 0 24 24" id="view-icon-${video.id}" style="width: 14px; height: 14px; fill: ${viewColor};"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        </div>
+                        <a href="/comments/?video_id=${video.id}" class="meta-item" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 3px;">
+                            <span>${video.comments_count || 0}</span>
+                            <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: ${commentColor};"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                        </a>
+                    </div>
+                    <button class="btn-watch" onclick="handleWatch(${video.id})">مشاهده</button>
+                </div>
+            </div>
+        `;
+    }
+        // ارسال هدر توکن برای تشخیص کاربر در لود فیلم‌ها
+        const token = localStorage.getItem('access_token');
+        const authHeaders = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+        fetch('/api/content/list/', { headers: authHeaders })
+            .then(res => res.json())
+            .then(videos => {
+                const moviesCarousel = document.getElementById('movies-carousel');
+                const seriesCarousel = document.getElementById('series-carousel');
+                let moviesHtml = '', seriesHtml = '';
+
+                videos.forEach(v => {
+                    if (v.video_type === 'movie') moviesHtml += createCard(v);
+                    else seriesHtml += createCard(v);
+                });
+
+                moviesCarousel.innerHTML = moviesHtml || '<span style="color:var(--text-muted);font-size:0.85rem;">فیلمی یافت نشد.</span>';
+                seriesCarousel.innerHTML = seriesHtml || '<span style="color:var(--text-muted);font-size:0.85rem;">سریالی یافت نشد.</span>';
+            });
+
+    // 4. اسکرول خودکار
+    function autoScrollCarousel(carouselId) {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return;
+        let isHovered = false;
+
+        carousel.addEventListener('mouseenter', () => isHovered = true);
+        carousel.addEventListener('mouseleave', () => isHovered = false);
+        carousel.addEventListener('touchstart', () => isHovered = true);
+        carousel.addEventListener('touchend', () => { setTimeout(() => isHovered = false, 2000); });
+
+        setInterval(() => {
+            if (!isHovered && carousel.children.length > 3) {
+                carousel.scrollBy({ left: -145, behavior: 'smooth' });
+                if (Math.abs(carousel.scrollLeft) >= (carousel.scrollWidth - carousel.clientWidth - 10)) {
+                    setTimeout(() => { carousel.scrollTo({ left: 0, behavior: 'smooth' }); }, 500);
+                }
+            }
+        }, 3000);
+    }
+
+    autoScrollCarousel('movies-carousel');
+    autoScrollCarousel('series-carousel');
+})();
+
+// 5. لود آمار فردی باکس‌های بالا
+function loadStats() {
+    const token = localStorage.getItem('access_token');
+    const reqHeaders = token ? { 'Authorization': 'Bearer ' + token } : {};
+    
+    fetch('/api/content/stats/', { headers: reqHeaders })
+        .then(res => res.json())
+        .then(data => {
+            const likesEl = document.getElementById('stat-user-likes');
+            const commentsEl = document.getElementById('stat-user-comments');
+            const watchedEl = document.getElementById('stat-user-watched');
+
+            if (likesEl) likesEl.innerText = data.user_likes;
+            if (commentsEl) commentsEl.innerText = data.user_comments;
+            if (watchedEl) watchedEl.innerText = data.user_watched;
+        })
+        .catch(err => console.error("Error loading stats:", err));
+}
+
+loadStats();
+
+window.addEventListener('pageshow', function() {
+    loadStats();
+});
+
+// 6. ثبت لایک
+// ۶. ثبت لایک همراه با نوتیفیکیشن
+window.handleLike = function(videoId) {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        showToast("برای لایک کردن لطفاً ابتدا وارد حساب شوید.", "error");
+        return;
+    }
+
+    fetch(`/api/content/${videoId}/like/`, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.likes_count !== undefined) {
+            document.getElementById(`like-count-${videoId}`).innerText = data.likes_count;
+            const heart = document.getElementById(`heart-icon-${videoId}`);
+            heart.style.fill = data.liked ? '#E50914' : 'var(--text-muted)';
+            loadStats();
+            showToast(data.liked ? "فیلم به لیست لایک‌های شما اضافه شد." : "لایک برداشته شد.", "info");
+        }
+    })
+    .catch(err => console.error("Like failed:", err));
+};
+
+// ۷. افزایش ویو و تماشای فیلم با بررسی ویژه
+window.handleWatch = function(videoId) {
+    const token = localStorage.getItem('access_token');
+    const reqHeaders = token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
+    fetch(`/api/content/${videoId}/watch/`, {
+        method: 'POST',
+        headers: reqHeaders
+    })
+    .then(async res => {
+        const data = await res.json();
+        
+        // اگر محتوا ویژه بود و کاربر عادی است
+        if (res.status === 403) {
+            showToast("این محتوا مخصوص کاربران ویژه است! در حال انتقال به کیف پول...", "error");
+            addNotification("محتوای ویژه نیازمند تهیه اشتراک است.");
+            setTimeout(() => {
+                window.location.href = '/wallet/';
+            }, 2000);
+            return;
+        }
+
+        if (!res.ok) {
+            showToast(data.error || "خطایی رخ داد.", "error");
+            return;
+        }
+
+        // بروزرسانی شمارنده و رنگ آیکون بازدید
+        const viewEl = document.getElementById(`view-count-${videoId}`);
+        if (viewEl && data.views_count) viewEl.innerText = data.views_count;
+        const viewIcon = document.getElementById(`view-icon-${videoId}`);
+        if (viewIcon) viewIcon.style.fill = '#3B82F6';
+
+        loadStats();
+
+        // باز کردن ویدیو
+        if (data.video_url && data.video_url.trim() !== '') {
+            window.open(data.video_url, '_blank');
+        } else {
+            showToast("لینک پخشی برای این فیلم تنظیم نشده است.", "error");
+        }
+    })
+    .catch(err => console.error("Watch error:", err));
+};
+</script>
+{% endblock %}

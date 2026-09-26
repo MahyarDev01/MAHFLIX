@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav_profile %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* تنظیمات عناوین بخش‌ها */
+    .section-header { width: 90%; max-width: 800px; margin: 25px auto 15px auto; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 1.1rem; font-weight: 800; border-right: 4px solid var(--primary-red); padding-right: 10px; color: var(--text-color); }
+
+    /* --- 1. باکس اصلی پروفایل --- */
+    .profile-card {
+        width: 90%; max-width: 800px; margin: 0 auto 25px auto;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 20px; padding: 25px 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        display: flex; flex-direction: column; align-items: center;
+    }
+
+    /* آیکون آواتار بالا */
+    .avatar-wrapper {
+        width: 80px; height: 80px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--primary-red);
+        border-radius: 50%; display: flex; justify-content: center; align-items: center;
+        margin-bottom: 15px; box-shadow: 0 5px 15px rgba(229, 9, 20, 0.2);
+    }
+    .avatar-wrapper svg { width: 45px; height: 45px; fill: var(--primary-red); }
+
+    /* وضعیت کاربر (معمولی/ویژه) */
+    .badge-container { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
+    .user-badge {
+        background: #555;
+        color: #fff; font-size: 0.75rem; font-weight: bold;
+        padding: 6px 16px; border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .user-badge.premium {
+        background: linear-gradient(90deg, #E50914, #b81d24);
+        box-shadow: 0 4px 12px rgba(229, 9, 20, 0.35);
+    }
+
+    /* دکمه لغو اشتراک */
+    .btn-cancel-sub {
+        background: rgba(229, 9, 20, 0.1);
+        color: #ff5252;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 14px;
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: none;
+    }
+    .btn-cancel-sub:hover {
+        background: rgba(229, 9, 20, 0.25);
+        color: #fff;
+    }
+
+    /* لیست اطلاعات (ایمیل، شماره، موجودی) */
+    .info-list { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+    
+    .info-item {
+        display: flex; justify-content: space-between; align-items: center;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--card-border);
+        padding: 12px 15px; border-radius: 12px;
+    }
+    [data-theme="light"] .info-item { background: rgba(0, 0, 0, 0.02); }
+
+    .info-label-group { display: flex; align-items: center; gap: 10px; }
+    .info-label-group svg { width: 18px; height: 18px; fill: var(--text-muted); }
+    .info-label { font-size: 0.85rem; color: var(--text-muted); }
+    
+    .info-value { font-size: 0.95rem; font-weight: bold; color: var(--text-color); }
+    .info-value.highlight { color: #22C55E; }
+
+    /* --- 2. تاریخچه تماشا --- */
+    .history-card {
+        width: 90%; max-width: 800px; margin: 0 auto 25px auto;
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        border-radius: 20px; padding: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .history-list {
+        display: flex; flex-direction: column; gap: 12px; margin-top: 10px;
+    }
+    .history-item {
+        display: flex; align-items: center; justify-content: space-between;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--card-border);
+        padding: 10px 14px; border-radius: 12px;
+        transition: 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(229, 9, 20, 0.3);
+    }
+    .history-info { display: flex; align-items: center; gap: 12px; }
+    .history-cover {
+        width: 60px; height: 40px; border-radius: 6px;
+        object-fit: cover; background: #222;
+    }
+    .history-title { font-size: 0.9rem; font-weight: bold; color: var(--text-color); }
+    .history-type { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .history-date { font-size: 0.75rem; color: var(--text-muted); direction: ltr; }
+
+    .empty-state {
+        text-align: center; color: var(--text-muted);
+        font-size: 0.85rem; padding: 20px 0;
+    }
+
+    /* --- 3. دکمه‌های عملیات --- */
+    .action-buttons {
+        width: 90%; max-width: 800px; margin: 0 auto 30px auto;
+        display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .btn-edit {
+        width: 100%; background: var(--card-bg); color: var(--text-color);
+        padding: 14px; border-radius: 14px; text-decoration: none;
+        font-weight: bold; font-size: 0.95rem; display: flex;
+        justify-content: center; align-items: center; gap: 8px;
+        border: 1px solid var(--card-border); transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .btn-edit:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--text-muted); }
+    .btn-edit svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .btn-logout {
+        width: 100%; background: transparent; color: var(--primary-red);
+        padding: 14px; border-radius: 14px; text-decoration: none;
+        font-weight: bold; font-size: 0.95rem; display: flex;
+        justify-content: center; align-items: center; gap: 8px;
+        border: 1px solid var(--primary-red); transition: 0.3s;
+        cursor: pointer;
+    }
+    .btn-logout:hover { background: var(--primary-red); color: #fff; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3); }
+    .btn-logout svg { width: 18px; height: 18px; fill: currentColor; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="section-header">
+        <h2 class="section-title">پروفایل کاربری</h2>
+    </div>
+
+    <!-- 1. باکس اطلاعات کاربر -->
+    <div class="profile-card">
+        <div class="avatar-wrapper">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </div>
+
+        <div class="badge-container">
+            <span class="user-badge" id="user-badge">در حال بارگذاری...</span>
+            <button id="cancelSubBtn" class="btn-cancel-sub">لغو اشتراک</button>
+        </div>
+
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-label-group">
+                    <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    <span class="info-label">شماره موبایل</span>
+                </div>
+                <span class="info-value" id="profile-phone">---</span>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label-group">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span class="info-label">ایمیل</span>
+                </div>
+                <span class="info-value" id="profile-email">---</span>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label-group">
+                    <svg viewBox="0 0 24 24"><path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .89-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"/><circle cx="16" cy="12" r="1.5"/></svg>
+                    <span class="info-label">موجودی کیف پول</span>
+                </div>
+                <span class="info-value highlight" id="profile-wallet">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. باکس تاریخچه تماشا -->
+    <div class="section-header">
+        <h2 class="section-title">تاریخچه تماشا</h2>
+    </div>
+    <div class="history-card">
+        <div class="history-list" id="history-list-container">
+            <div class="empty-state">در حال بررسی و دریافت تاریخچه...</div>
+        </div>
+    </div>
+
+    <!-- 3. دکمه‌های عملیات -->
+    <div class="action-buttons">
+        <a href="#" class="btn-edit">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            تغییر اطلاعات کاربری
+        </a>
+
+        <a href="#" class="btn-logout" id="logoutBtn">
+            <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+            خروج از حساب کاربری
+        </a>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const userToken = localStorage.getItem('access_token');
+
+    if (!userToken) {
+        window.location.href = '/';
+        return;
+    }
+
+    const headers = {
+        'Authorization': 'Bearer ' + userToken,
+        'Content-Type': 'application/json'
+    };
+
+    // 1. دریافت اطلاعات پروفایل
+    fetch('/api/users/profile/', { method: 'GET', headers: headers })
+    .then(res => {
+        if (res.status === 401) {
+            localStorage.clear();
+            window.location.href = '/';
+            return null;
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data && data.phone_number) {
+            document.getElementById('profile-phone').innerText = data.phone_number;
+            document.getElementById('profile-email').innerText = data.email;
+            document.getElementById('profile-wallet').innerText = data.wallet_balance;
+            
+            const badge = document.getElementById('user-badge');
+            const cancelBtn = document.getElementById('cancelSubBtn');
+            if (data.is_premium) {
+                badge.innerText = "کاربر ویژه";
+                badge.className = "user-badge premium";
+                if (cancelBtn) cancelBtn.style.display = "inline-block";
+            } else {
+                badge.innerText = "کاربر عادی";
+                badge.className = "user-badge";
+                if (cancelBtn) cancelBtn.style.display = "none";
+            }
+        }
+    })
+    .catch(err => console.error("Error loading profile:", err));
+
+    // 2. هندل دکمه لغو اشتراک
+    const cancelBtn = document.getElementById('cancelSubBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            if (!confirm("آیا مطمئن هستید که می‌خواهید اشتراک فعال خود را لغو کنید؟")) return;
+
+            fetch('/api/finance/subscription/cancel/', {
+                method: 'POST',
+                headers: headers
+            })
+            .then(res => res.json())
+            .then(resData => {
+                alert(resData.message || resData.error);
+                window.location.reload();
+            })
+            .catch(err => {
+                alert("خطا در برقراری ارتباط با سرور");
+                console.error(err);
+            });
+        });
+    }
+
+// 3. دریافت لیست تاریخچه تماشا
+    fetch('/api/content/history/', { method: 'GET', headers: headers })
+    .then(res => {
+        if (res.ok) return res.json();
+        return [];
+    })
+    .then(historyData => {
+        const container = document.getElementById('history-list-container');
+        if (!historyData || historyData.length === 0) {
+            container.innerHTML = '<div class="empty-state">هنوز هیچ ویدیویی تماشا نکرده‌اید.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        historyData.forEach(item => {
+            const video = item.video;
+            if (!video) return;
+
+            let coverSrc = video.cover_path || '';
+            
+            // اصلاح مسیر برای قرارگیری در پوشه static
+            if (coverSrc && !coverSrc.startsWith('http')) {
+                if (coverSrc.startsWith('/static/')) {
+                    // قبلاً کامل بوده
+                } else if (coverSrc.startsWith('static/')) {
+                    coverSrc = '/' + coverSrc;
+                } else if (coverSrc.startsWith('/')) {
+                    coverSrc = '/static' + coverSrc;
+                } else {
+                    coverSrc = '/static/' + coverSrc;
+                }
+            }
+
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-info">
+                    <img src="${coverSrc}" class="history-cover" alt="${video.title}">
+                    <div>
+                        <div class="history-title">${video.title}</div>
+                        <div class="history-type">${video.video_type === 'series' ? 'سریال' : 'سینمایی'}</div>
+                    </div>
+                </div>
+                <div class="history-date">${item.watched_at ? item.watched_at.slice(0, 10) : ''}</div>
+            `;
+            container.appendChild(historyItem);
+        });
+    })
+    .catch(err => {
+        console.error("Error loading history:", err);
+        document.getElementById('history-list-container').innerHTML = '<div class="empty-state">خطا در بارگذاری تاریخچه.</div>';
+    });
+    
+    // 4. دکمه خروج
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/';
+        });
+    }
+})();
+</script>
+{% endblock %}
